@@ -3,12 +3,16 @@ import { SessionsClient } from "./sessions-client";
 import { KnowledgeManagementClient } from "./knowledge-management-client";
 import { UserFeedbackClient } from "./user-feedback-client";
 import { LandingPageClient } from "./landing-page-clients";
+import { UserManagementClient } from "./user-management-client";
+import { DraftsClient } from "./drafts-client";
 
 export class ApiClient {
   private _sessionsClient: SessionsClient | undefined;
   private _knowledgeManagementClient: KnowledgeManagementClient | undefined;
   private _userFeedbackClient: UserFeedbackClient | undefined;
   private _landingPageClient: LandingPageClient | undefined;
+  private _userManagementClient: UserManagementClient | undefined;
+  private _draftsClient: DraftsClient | undefined;
 
   /** Construct the Knowledge Management sub-client */
   public get knowledgeManagement() {
@@ -34,12 +38,28 @@ export class ApiClient {
     return this._sessionsClient;
   }
 
+  /** Construct the Drafts sub-client */
+  public get drafts() {
+    if (!this._draftsClient) {
+      this._draftsClient = new DraftsClient(this._appConfig);
+    }
+    return this._draftsClient;
+  }
+
   /** Construct the Feedback sub-client */
   public get userFeedback() {
     if (!this._userFeedbackClient) {
       this._userFeedbackClient = new UserFeedbackClient(this._appConfig);
     }
     return this._userFeedbackClient;
+  }
+
+  /** Construct the User Management sub-client */
+  public get userManagement() {
+    if (!this._userManagementClient) {
+      this._userManagementClient = new UserManagementClient(this._appConfig);
+    }
+    return this._userManagementClient;
   }
 
   constructor(protected _appConfig: AppConfig) {}
