@@ -655,7 +655,7 @@ const IntegratedSearchBar: React.FC<IntegratedSearchBarProps> = ({
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search for grants or funding opportunities..."
+          placeholder="Search grants from our repository..."
           style={{
             ...inputStyle,
             cursor: isLoading || documents.some(doc => doc.label === searchTerm) ? 'not-allowed' : 'text',
@@ -724,86 +724,41 @@ const IntegratedSearchBar: React.FC<IntegratedSearchBarProps> = ({
         <div style={resultsContainerStyle}>
           {searchTerm.length === 0 && (
             <div style={emptyPromptStyle}>
-                            <div style={{
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                padding: '15px',
+              <div style={{
+                background: 'linear-gradient(135deg, #e6f4ff 0%, #f0f9ff 100%)',
+                borderRadius: '12px',
+                padding: '20px 24px',
                 margin: '15px 0',
-                border: '1px solid #e9ecef'
+                border: '2px solid #0073BB',
+                boxShadow: '0 2px 8px rgba(0, 115, 187, 0.1)',
+                textAlign: 'left'
               }}>
-                <h4 style={{ 
-                  margin: '0 0 10px 0',
+                <p style={{
+                  margin: '0 0 12px 0',
                   fontSize: '14px',
-                  color: '#495057'
+                  color: '#333',
+                  lineHeight: '1.6'
                 }}>
-                  How to Search:
-                </h4>
-                <ul style={{
+                  <strong>Know the grant you need?</strong> Type its name above and browse through matching grants in the list.
+                </p>
+                <p style={{
                   margin: '0',
-                  padding: '0 0 0 20px',
-                  fontSize: '13px',
-                  color: '#666',
-                  listStyleType: 'none'
+                  fontSize: '14px',
+                  color: '#333',
+                  lineHeight: '1.6'
                 }}>
-                  <li style={{ marginBottom: '8px', display: 'flex', alignItems: 'flex-start' }}>
-                    <span style={{ 
-                      backgroundColor: '#0073BB',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: '20px',
-                      height: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      marginRight: '8px',
-                      flexShrink: 0
-                    }}>1</span>
-                    <span>Type a grant name or keywords (e.g., "Transportation Infrastructure")</span>
-                  </li>
-                  <li style={{ marginBottom: '8px', display: 'flex', alignItems: 'flex-start' }}>
-                    <span style={{ 
-                      backgroundColor: '#0073BB',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: '20px',
-                      height: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      marginRight: '8px',
-                      flexShrink: 0
-                    }}>2</span>
-                    <span>Browse through matching grants in the dropdown</span>
-                  </li>
-                  <li style={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <span style={{ 
-                      backgroundColor: '#0073BB',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: '20px',
-                      height: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      marginRight: '8px',
-                      flexShrink: 0
-                    }}>3</span>
-                    <span>Or use the Grant Assistant below for personalized recommendations</span>
-                  </li>
-                </ul>
+                  <strong>Not sure where to start?</strong> Click "Grant Assistant" below to describe what you're looking for.
+                </p>
               </div>
               <AssistantButton query={undefined} />
             </div>
           )}
           
-          {/* Pinned grants section */}
-          {filteredPinnedGrants.length > 0 && (
+          {/* Pinned grants section - show when search is empty OR when filtered */}
+          {(searchTerm.length === 0 ? pinnedGrants.length > 0 : filteredPinnedGrants.length > 0) && (
             <>
               <div style={sectionHeaderStyle}>Pinned Grants</div>
-              {filteredPinnedGrants.map((grant, index) => (
+              {(searchTerm.length === 0 ? pinnedGrants : filteredPinnedGrants).map((grant, index) => (
                 <div
                   key={`pinned-${index}`}
                   style={selectedIndex === index ? selectedPinnedItemStyle : pinnedItemStyle}
@@ -841,10 +796,11 @@ const IntegratedSearchBar: React.FC<IntegratedSearchBarProps> = ({
             </>
           )}
           
-          {searchTerm.length > 0 && filteredDocuments.length > 0 && (
+          {/* Available grants section - show all when search is empty OR filtered results */}
+          {(searchTerm.length === 0 ? documents.length > 0 : filteredDocuments.length > 0) && (
             <>
               <div style={sectionHeaderStyle}>Available Grants</div>
-              {filteredDocuments.map((doc, index) => {
+              {(searchTerm.length === 0 ? documents : filteredDocuments).map((doc, index) => {
                 const docName = doc.label || '';
                 
                 const isPinned = isNofoPinned(docName);
@@ -954,7 +910,7 @@ const IntegratedSearchBar: React.FC<IntegratedSearchBarProps> = ({
             <form onSubmit={handleAssistantSubmit} style={assistantInputContainerStyle}>
               <input
                 type="text"
-                placeholder="Describe your project or funding needs (e.g., rural infrastructure development)"
+                placeholder="Describe your project or funding needs to find matching grants from our repository"
                 value={assistantInput}
                 onChange={e => setAssistantInput(e.target.value)}
                 style={assistantInputStyle}

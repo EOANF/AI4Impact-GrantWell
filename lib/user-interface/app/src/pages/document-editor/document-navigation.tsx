@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { addToRecentlyViewed } from "../../utils/recently-viewed-nofos";
 
 interface DocumentNavigationProps {
   documentIdentifier?: string;
@@ -38,6 +39,14 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
 
   // Handle requirements navigation
   const handleRequirementsNavigation = () => {
+    if (documentIdentifier) {
+      // Track the NOFO as recently viewed
+      addToRecentlyViewed({
+        label: documentIdentifier.replace("/", ""), // Remove trailing slash if present
+        value: documentIdentifier
+      });
+    }
+    
     const queryParams = documentIdentifier
       ? `?nofo=${encodeURIComponent(documentIdentifier)}`
       : "";
@@ -174,7 +183,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             {isOpen && (
-              <span style={{ marginLeft: "12px" }}>Chat / Ask AI</span>
+              <span style={{ marginLeft: "12px" }}>Chat with AI</span>
             )}
           </button>
 

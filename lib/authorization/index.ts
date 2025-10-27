@@ -23,7 +23,7 @@ export class AuthorizationStack extends Construct {
     // Create the Cognito User Pool
     const userPool = new UserPool(this, 'UserPool', {      
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      selfSignUpEnabled: false,
+      selfSignUpEnabled: true,
       mfa: cognito.Mfa.OPTIONAL,
       featurePlan: FeaturePlan.PLUS,
       autoVerify: { email: true, phone: true },
@@ -37,21 +37,26 @@ export class AuthorizationStack extends Construct {
       userInvitation: {
         emailSubject: 'Welcome to GrantWell!',
         emailBody:
-          'Hello,<br><br>' +
-          'I am pleased to inform you that the new custom deployment link for the GrantWell tool is now ready for testing. All future updates and changes will be applied to this new link.<br><br>' +
-          'Please note that the tool is still under development, so you may encounter errors. We kindly request that you record any feedback regarding the tool\'s performance.<br><br>' +
-          'Below, you will find the necessary information for signing into the tool:<br><br>' +
-          '<strong>First-Time Sign-In:</strong><br>' +
-          'Please use the following link when signing in for the first time:<br>' +
-          '<a href="' + emailConfig.cognitoLoginUrl + '?client_id=' + emailConfig.clientId + '&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=' + emailConfig.deploymentUrl + '">First Time Sign-In Link</a><br><br>' +
-          '<strong>Regular Access:</strong><br>' +
-          'Once registered, you can use the regular custom deployment link:<br>' +
-          '<a href="' + emailConfig.deploymentUrl + '">Regular Custom Deployment Link</a><br><br>' +
+          'Hello everyone,<br><br>' +
+          'We\'re excited to share that the custom deployment link for the GrantWell tool is now live and ready for testing. All upcoming updates and improvements will be applied to this version moving forward.<br><br>' +
+          'Please note that the tool is still under active development, so you may encounter occasional issues during use. Your feedback will be invaluable in helping us refine and enhance the overall experience.<br><br>' +
+          '<strong>Access the Application:</strong><br>' +
+          '<a href="' + emailConfig.deploymentUrl + '">GrantWell Application</a><br><br>' +
           '<strong>Login Credentials:</strong><br>' +
           'Username: {username}<br>' +
           'Temporary Password: {####}<br><br>' +
-          'Thank you,<br>' +
+          'Thank you all for your continued support and collaboration as we move into this next phase of testing.<br><br>' +
+          'Warm regards,<br>' +
           'The GrantWell Team',
+        smsMessage: 'Hello {username}, your temporary password for GrantWell is {####}'
+      },
+      userVerification: {
+        emailSubject: 'Verify Your Account on GrantWell',
+        emailBody:
+          'Hello everyone,<br><br>' +
+          'We are thrilled to have you join GrantWell! As we are still in development, you might face some occasional issues. Your feedback is invaluable in helping us improve.<br><br>' +
+          'The verification code for your new account is {####}. Please enter this code on the verification page to complete the signup process.<br><br>' +
+          'Thank you for choosing GrantWell!<br><br>Warm regards,<br>The GrantWell Team',
         smsMessage: 'Hello {username}, your temporary password for GrantWell is {####}'
       }
     });
