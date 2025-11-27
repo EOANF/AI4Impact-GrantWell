@@ -43,18 +43,20 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
       // Track the NOFO as recently viewed
       addToRecentlyViewed({
         label: documentIdentifier.replace("/", ""), // Remove trailing slash if present
-        value: documentIdentifier
+        value: documentIdentifier,
       });
+
+      // Navigate to requirements page - using both path param and query param for compatibility
+      // Path param is primary, folder param is for consistency with chatbot navigation
+      navigate(
+        `/landing-page/basePage/checklists/${encodeURIComponent(
+          documentIdentifier
+        )}?folder=${encodeURIComponent(documentIdentifier)}`
+      );
+    } else {
+      // If no documentIdentifier, go back to base page
+      navigate("/landing-page/basePage");
     }
-    
-    const queryParams = documentIdentifier
-      ? `?nofo=${encodeURIComponent(documentIdentifier)}`
-      : "";
-    navigate(
-      `/landing-page/basePage/checklists/${encodeURIComponent(
-        documentIdentifier || ""
-      )}`
-    );
   };
 
   return (
@@ -92,6 +94,8 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
         )}
         <button
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Collapse navigation" : "Expand navigation"}
+          aria-expanded={isOpen}
           style={{
             background: "none",
             border: "none",
@@ -105,6 +109,8 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
             alignItems: "center",
             justifyContent: "center",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.8")}
         >
           <svg
             viewBox="0 0 24 24"
@@ -141,7 +147,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
                 padding: "0 16px 8px 16px",
                 fontSize: "12px",
                 fontWeight: 600,
-                color: "#a0aec0",
+                color: "#e2e8f0",
                 textTransform: "uppercase",
                 letterSpacing: "1px",
               }}
@@ -152,6 +158,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
 
           <button
             onClick={handleChatNavigation}
+            aria-label="Chat with AI"
             style={{
               width: "100%",
               display: "flex",
@@ -160,13 +167,21 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
               borderRadius: "8px",
               marginBottom: "8px",
               background: currentStep === "chat" ? "#2563eb" : "none",
-              color: currentStep === "chat" ? "white" : "#cbd5e1",
+              color: currentStep === "chat" ? "white" : "#e2e8f0",
               border: "none",
               fontSize: "16px",
               cursor: "pointer",
               transition: "background 0.2s, color 0.2s",
               textAlign: "left",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background =
+                currentStep === "chat" ? "#2563eb" : "#2d3748")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                currentStep === "chat" ? "#2563eb" : "none")
+            }
           >
             <svg
               viewBox="0 0 24 24"
@@ -182,13 +197,12 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
-            {isOpen && (
-              <span style={{ marginLeft: "12px" }}>Chat with AI</span>
-            )}
+            {isOpen && <span style={{ marginLeft: "12px" }}>Chat with AI</span>}
           </button>
 
           <button
             onClick={handleDraftsNavigation}
+            aria-label="Drafts"
             style={{
               width: "100%",
               display: "flex",
@@ -197,13 +211,21 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
               borderRadius: "8px",
               marginBottom: "8px",
               background: currentStep === "drafts" ? "#2563eb" : "none",
-              color: currentStep === "drafts" ? "white" : "#cbd5e1",
+              color: currentStep === "drafts" ? "white" : "#e2e8f0",
               border: "none",
               fontSize: "16px",
               cursor: "pointer",
               transition: "background 0.2s, color 0.2s",
               textAlign: "left",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background =
+                currentStep === "drafts" ? "#2563eb" : "#2d3748")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                currentStep === "drafts" ? "#2563eb" : "none")
+            }
           >
             <svg
               viewBox="0 0 24 24"
@@ -221,13 +243,12 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
-            {isOpen && (
-              <span style={{ marginLeft: "12px" }}>Drafts</span>
-            )}
+            {isOpen && <span style={{ marginLeft: "12px" }}>Drafts</span>}
           </button>
 
           <button
             onClick={handleRequirementsNavigation}
+            aria-label="Requirements"
             style={{
               width: "100%",
               display: "flex",
@@ -236,13 +257,21 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
               borderRadius: "8px",
               marginBottom: "8px",
               background: currentStep === "requirements" ? "#2563eb" : "none",
-              color: currentStep === "requirements" ? "white" : "#cbd5e1",
+              color: currentStep === "requirements" ? "white" : "#e2e8f0",
               border: "none",
               fontSize: "16px",
               cursor: "pointer",
               transition: "background 0.2s, color 0.2s",
               textAlign: "left",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background =
+                currentStep === "requirements" ? "#2563eb" : "#2d3748")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                currentStep === "requirements" ? "#2563eb" : "none")
+            }
           >
             <svg
               viewBox="0 0 24 24"
@@ -262,9 +291,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
               <line x1="16" y1="17" x2="8" y2="17"></line>
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
-            {isOpen && (
-              <span style={{ marginLeft: "12px" }}>Requirements</span>
-            )}
+            {isOpen && <span style={{ marginLeft: "12px" }}>Requirements</span>}
           </button>
         </div>
 
@@ -287,6 +314,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
 
             <button
               onClick={() => onNavigate("projectBasics")}
+              aria-label="Project Basics"
               style={{
                 width: "100%",
                 display: "flex",
@@ -296,13 +324,21 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
                 marginBottom: "8px",
                 background:
                   currentStep === "projectBasics" ? "#2563eb" : "none",
-                color: currentStep === "projectBasics" ? "white" : "#cbd5e1",
+                color: currentStep === "projectBasics" ? "white" : "#e2e8f0",
                 border: "none",
                 fontSize: "16px",
                 cursor: "pointer",
                 transition: "background 0.2s, color 0.2s",
                 textAlign: "left",
               }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background =
+                  currentStep === "projectBasics" ? "#2563eb" : "#2d3748")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background =
+                  currentStep === "projectBasics" ? "#2563eb" : "none")
+              }
             >
               <svg
                 viewBox="0 0 24 24"
@@ -333,6 +369,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
             ].includes(currentStep) && (
               <button
                 onClick={() => onNavigate("questionnaire")}
+                aria-label="Questionnaire"
                 style={{
                   width: "100%",
                   display: "flex",
@@ -342,13 +379,21 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
                   marginBottom: "8px",
                   background:
                     currentStep === "questionnaire" ? "#2563eb" : "none",
-                  color: currentStep === "questionnaire" ? "white" : "#cbd5e1",
+                  color: currentStep === "questionnaire" ? "white" : "#e2e8f0",
                   border: "none",
                   fontSize: "16px",
                   cursor: "pointer",
                   transition: "background 0.2s, color 0.2s",
                   textAlign: "left",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "questionnaire" ? "#2563eb" : "#2d3748")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "questionnaire" ? "#2563eb" : "none")
+                }
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -379,6 +424,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
             ].includes(currentStep) && (
               <button
                 onClick={() => onNavigate("uploadDocuments")}
+                aria-label="Upload Documents"
                 style={{
                   width: "100%",
                   display: "flex",
@@ -396,6 +442,14 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
                   transition: "background 0.2s, color 0.2s",
                   textAlign: "left",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "uploadDocuments" ? "#2563eb" : "#2d3748")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "uploadDocuments" ? "#2563eb" : "none")
+                }
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -422,6 +476,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
             {["sectionEditor", "reviewApplication"].includes(currentStep) && (
               <button
                 onClick={() => onNavigate("sectionEditor")}
+                aria-label="Section Editor"
                 style={{
                   width: "100%",
                   display: "flex",
@@ -431,13 +486,21 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
                   marginBottom: "8px",
                   background:
                     currentStep === "sectionEditor" ? "#2563eb" : "none",
-                  color: currentStep === "sectionEditor" ? "white" : "#cbd5e1",
+                  color: currentStep === "sectionEditor" ? "white" : "#e2e8f0",
                   border: "none",
                   fontSize: "16px",
                   cursor: "pointer",
                   transition: "background 0.2s, color 0.2s",
                   textAlign: "left",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "sectionEditor" ? "#2563eb" : "#2d3748")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "sectionEditor" ? "#2563eb" : "none")
+                }
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -463,6 +526,7 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
             {currentStep === "reviewApplication" && (
               <button
                 onClick={() => onNavigate("reviewApplication")}
+                aria-label="Review"
                 style={{
                   width: "100%",
                   display: "flex",
@@ -480,6 +544,14 @@ const DocumentNavigation: React.FC<DocumentNavigationProps> = ({
                   transition: "background 0.2s, color 0.2s",
                   textAlign: "left",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "reviewApplication" ? "#2563eb" : "#2d3748")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background =
+                    currentStep === "reviewApplication" ? "#2563eb" : "none")
+                }
               >
                 <svg
                   viewBox="0 0 24 24"

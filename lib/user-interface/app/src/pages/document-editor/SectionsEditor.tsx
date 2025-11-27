@@ -292,11 +292,11 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
               background: "#f0f4ff",
               padding: "16px",
               borderRadius: "8px",
-              borderLeft: "4px solid #4361ee",
+              borderLeft: "4px solid #2c4fdb",
               marginBottom: "24px",
             }}
           >
-            <p style={{ color: "#4b5563" }}>
+            <p style={{ color: "#374151" }}>
               {sections[activeSection]?.description}
             </p>
           </div>
@@ -321,6 +321,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
               }}
             >
               <button
+                aria-label="Bold"
                 style={{
                   width: "32px",
                   height: "32px",
@@ -330,13 +331,17 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                   background: "none",
                   border: "none",
                   borderRadius: "4px",
-                  color: "#4b5563",
+                  color: "#374151",
                   cursor: "pointer",
+                  transition: "background 0.2s",
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#e5e7eb")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
               >
                 <span style={{ fontWeight: "bold" }}>B</span>
               </button>
               <button
+                aria-label="Italic"
                 style={{
                   width: "32px",
                   height: "32px",
@@ -346,13 +351,17 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                   background: "none",
                   border: "none",
                   borderRadius: "4px",
-                  color: "#4b5563",
+                  color: "#374151",
                   cursor: "pointer",
+                  transition: "background 0.2s",
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#e5e7eb")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
               >
                 <span style={{ fontStyle: "italic" }}>I</span>
               </button>
               <button
+                aria-label="Underline"
                 style={{
                   width: "32px",
                   height: "32px",
@@ -362,9 +371,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                   background: "none",
                   border: "none",
                   borderRadius: "4px",
-                  color: "#4b5563",
+                  color: "#374151",
                   cursor: "pointer",
+                  transition: "background 0.2s",
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#e5e7eb")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
               >
                 <span style={{ textDecoration: "underline" }}>U</span>
               </button>
@@ -377,6 +389,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 }}
               ></div>
               <button
+                aria-label="Bulleted list"
                 style={{
                   width: "32px",
                   height: "32px",
@@ -386,9 +399,12 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                   background: "none",
                   border: "none",
                   borderRadius: "4px",
-                  color: "#4b5563",
+                  color: "#374151",
                   cursor: "pointer",
+                  transition: "background 0.2s",
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#e5e7eb")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -437,7 +453,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 width: "100%",
                 padding: "12px",
                 background: "#f0f4ff",
-                color: "#4361ee",
+                color: "#2c4fdb",
                 border: "1px solid #d4daff",
                 borderRadius: "8px",
                 fontSize: "16px",
@@ -493,7 +509,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                       background: "white",
                       border: "1px solid #e5e7eb",
                       borderRadius: "6px",
-                      color: "#4b5563",
+                      color: "#374151",
                       fontSize: "14px",
                       cursor: "pointer",
                     }}
@@ -506,7 +522,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                       background: "white",
                       border: "1px solid #e5e7eb",
                       borderRadius: "6px",
-                      color: "#4b5563",
+                      color: "#374151",
                       fontSize: "14px",
                       cursor: "pointer",
                     }}
@@ -519,7 +535,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                       background: "white",
                       border: "1px solid #e5e7eb",
                       borderRadius: "6px",
-                      color: "#4b5563",
+                      color: "#374151",
                       fontSize: "14px",
                       cursor: "pointer",
                     }}
@@ -532,7 +548,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                       background: "white",
                       border: "1px solid #e5e7eb",
                       borderRadius: "6px",
-                      color: "#4b5563",
+                      color: "#374151",
                       fontSize: "14px",
                       cursor: "pointer",
                     }}
@@ -618,7 +634,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      color: "#6b7280",
+                      color: "#5a6169",
                       marginBottom: "8px",
                     }}
                   >
@@ -637,7 +653,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      color: "#6b7280",
+                      color: "#5a6169",
                     }}
                   >
                     <div
@@ -667,7 +683,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 background: "white",
                 border: "1px solid #e5e7eb",
                 borderRadius: "6px",
-                color: "#4b5563",
+                color: "#374151",
                 fontSize: "14px",
                 cursor: "pointer",
               }}
@@ -702,7 +718,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     background: "white",
                     border: "1px solid #d4daff",
                     borderRadius: "6px",
-                    color: "#4361ee",
+                    color: "#2c4fdb",
                     fontSize: "14px",
                     cursor: "pointer",
                   }}
@@ -734,7 +750,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     display: "flex",
                     alignItems: "center",
                     padding: "10px 16px",
-                    background: "#4361ee",
+                    background: "#2c4fdb",
                     color: "white",
                     border: "none",
                     borderRadius: "6px",
@@ -767,7 +783,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                     display: "flex",
                     alignItems: "center",
                     padding: "10px 16px",
-                    background: "#4361ee",
+                    background: "#2c4fdb",
                     color: "white",
                     border: "none",
                     borderRadius: "6px",
@@ -833,8 +849,8 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                 textAlign: "left",
                 border: "none",
                 borderRadius: "8px",
-                background: activeSection === idx ? "#4361ee" : "transparent",
-                color: activeSection === idx ? "white" : "#4b5563",
+                background: activeSection === idx ? "#2c4fdb" : "transparent",
+                color: activeSection === idx ? "white" : "#374151",
                 cursor: "pointer",
                 transition: "all 0.2s",
               }}
@@ -845,7 +861,7 @@ const SectionEditor: React.FC<SectionEditorProps> = ({
                   height: "24px",
                   borderRadius: "50%",
                   background: activeSection === idx ? "white" : "#f3f4f6",
-                  color: activeSection === idx ? "#4361ee" : "#6b7280",
+                  color: activeSection === idx ? "#2c4fdb" : "#5a6169",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

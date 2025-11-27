@@ -159,7 +159,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
           style={{
             marginTop: "16px",
             padding: "8px 16px",
-            background: "#4361ee",
+            background: "#2c4fdb",
             color: "white",
             border: "none",
             borderRadius: "4px",
@@ -211,7 +211,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
               background: "white",
               border: "1px solid #e2e8f0",
               borderRadius: "6px",
-              color: "#4a5568",
+              color: "#3d4451",
               fontSize: "16px",
               cursor: "pointer",
             }}
@@ -282,7 +282,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
     >
       <p
         style={{
-          color: "#4a5568",
+          color: "#3d4451",
           marginBottom: "24px",
         }}
       >
@@ -303,6 +303,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
         {questions.map((questionItem) => (
           <div key={questionItem.id} style={{ marginBottom: "24px" }}>
             <label
+              htmlFor={`question_${questionItem.id}`}
               style={{
                 display: "block",
                 marginBottom: "12px",
@@ -318,6 +319,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
               name={`question_${questionItem.id}`}
               value={formData[`question_${questionItem.id}`] || ""}
               onChange={handleInputChange}
+              aria-describedby={`question_${questionItem.id}_help`}
               style={{
                 width: "100%",
                 padding: "12px",
@@ -329,6 +331,18 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
               }}
               placeholder="Enter your answer here."
             />
+            <span
+              id={`question_${questionItem.id}_help`}
+              style={{
+                display: "block",
+                fontSize: "14px",
+                color: "#4a5568",
+                marginTop: "6px",
+                lineHeight: "1.4",
+              }}
+            >
+              Provide a detailed answer. You can edit this later in the document editor.
+            </span>
           </div>
         ))}
       </div>
@@ -348,7 +362,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
             background: "white",
             border: "1px solid #e2e8f0",
             borderRadius: "6px",
-            color: "#4a5568",
+            color: "#3d4451",
             fontSize: "16px",
             cursor: "pointer",
           }}
@@ -376,7 +390,7 @@ const QuickQuestionnaire: React.FC<QuickQuestionnaireProps> = ({
             display: "flex",
             alignItems: "center",
             padding: "12px 24px",
-            background: "#4361ee",
+            background: "#2c4fdb",
             color: "white",
             border: "none",
             borderRadius: "6px",

@@ -1,7 +1,8 @@
-import React, { useState, useContext, useEffect, useCallback } from "react";
+import React, { useState, useContext, useEffect, useCallback, useRef } from "react";
 import { ApiClient } from "../../common/api-client/api-client";
 import { AppContext } from "../../common/app-context";
 import { FileUploader } from "../../common/file-uploader";
+import { Auth } from "aws-amplify";
 import {
   X,
   Upload,
@@ -118,7 +119,12 @@ const styles: Record<string, React.CSSProperties> = {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: "#6b7280",
+    color: "#4a5159",
+    minWidth: "44px",
+    minHeight: "44px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalBody: {
     padding: "24px",
@@ -156,7 +162,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   uploadIcon: {
     marginBottom: "8px",
-    color: "#6b7280",
+    color: "#5a6169",
   },
   dropText: {
     fontSize: "16px",
@@ -166,7 +172,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   browseText: {
     fontSize: "14px",
-    color: "#6b7280",
+    color: "#5a6169",
   },
   browseLink: {
     color: "#0073bb",
@@ -193,7 +199,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   progressText: {
     fontSize: "14px",
-    color: "#6b7280",
+    color: "#5a6169",
     display: "flex",
     justifyContent: "space-between",
   },
@@ -217,7 +223,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   fileIcon: {
     marginRight: "12px",
-    color: "#6b7280",
+    color: "#5a6169",
   },
   fileDetails: {
     flex: 1,
@@ -232,18 +238,23 @@ const styles: Record<string, React.CSSProperties> = {
   },
   fileSize: {
     fontSize: "12px",
-    color: "#6b7280",
+    color: "#5a6169",
   },
   deleteButton: {
     background: "none",
     border: "none",
-    color: "#ef4444",
+    color: "#d32f2f",
     cursor: "pointer",
     padding: "8px",
     borderRadius: "4px",
+    minWidth: "44px",
+    minHeight: "44px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   errorText: {
-    color: "#ef4444",
+    color: "#d32f2f",
     fontSize: "14px",
     marginTop: "8px",
   },
@@ -260,10 +271,11 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     gap: "8px",
     marginTop: "16px",
+    minHeight: "44px",
   },
   disabledButton: {
     backgroundColor: "#e5e7eb",
-    color: "#9ca3af",
+    color: "#6c7481",
     cursor: "not-allowed",
   },
   modalFooter: {
@@ -279,6 +291,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     cursor: "pointer",
     marginLeft: "12px",
+    minHeight: "44px",
   },
   cancelButton: {
     backgroundColor: "white",
@@ -293,7 +306,7 @@ const styles: Record<string, React.CSSProperties> = {
   emptyState: {
     textAlign: "center",
     padding: "40px 0",
-    color: "#6b7280",
+    color: "#5a6169",
   },
   refreshButton: {
     background: "none",
@@ -328,6 +341,11 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "8px",
     borderRadius: "4px",
     marginRight: "6px",
+    minWidth: "44px",
+    minHeight: "44px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 };
 
@@ -341,25 +359,120 @@ export default function UploadModal({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatusAnnouncement, setUploadStatusAnnouncement] = useState('');
   const [existingFiles, setExistingFiles] = useState<UploadedFile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const appContext = useContext(AppContext);
+  
+  // Ref for modal container and focus restoration
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Helper to extract NOFO name from documentIdentifier
+  const extractNofoName = (docId: string | null): string => {
+    if (!docId) return "";
+    return docId.split("/").pop() || docId;
+  };
+
+  // Get userId on mount
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const user = await Auth.currentAuthenticatedUser();
+        setUserId(user.username);
+      } catch (error) {
+        console.error("Error getting user:", error);
+        setError("Failed to authenticate user. Please refresh the page.");
+      }
+    };
+    if (isOpen) {
+      fetchUserId();
+    }
+  }, [isOpen]);
+
+  // Focus trap and focus restoration
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Store the currently focused element
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
+    // Focus the modal after a short delay
+    setTimeout(() => {
+      const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      firstFocusable?.focus();
+    }, 100);
+
+    // Restore focus when modal closes
+    return () => {
+      // Only restore focus if the element still exists in the DOM
+      if (previousFocusRef.current && document.body.contains(previousFocusRef.current)) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [isOpen]);
+
+  // Focus trap handler
+  useEffect(() => {
+    if (!isOpen || !modalRef.current) return;
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+
+      if (!focusableElements || focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      // Check if currently focused element is inside the modal
+      const activeElement = document.activeElement as HTMLElement;
+      const isInsideModal = modalRef.current?.contains(activeElement);
+
+      // If focus is outside the modal, bring it back
+      if (!isInsideModal) {
+        e.preventDefault();
+        firstElement.focus();
+        return;
+      }
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTabKey);
+    return () => document.removeEventListener("keydown", handleTabKey);
+  }, [isOpen]);
 
   // Fetch existing files on component mount
   const fetchExistingFiles = useCallback(async () => {
-    if (!appContext || !documentIdentifier) return;
+    if (!appContext || !documentIdentifier || !userId) return;
 
     setLoadingFiles(true);
     setError(null);
 
     try {
       const apiClient = new ApiClient(appContext);
-      // Get list of documents from S3 using the documentIdentifier as the folder prefix
+      const nofoName = extractNofoName(documentIdentifier);
+      
+      // Get list of documents using userId and nofoName
       const result = await apiClient.knowledgeManagement.getDocuments(
-        documentIdentifier
+        userId,
+        nofoName
       );
 
       if (result && result.Contents) {
@@ -380,7 +493,7 @@ export default function UploadModal({
     } finally {
       setLoadingFiles(false);
     }
-  }, [appContext, documentIdentifier]);
+  }, [appContext, documentIdentifier, userId]);
 
   useEffect(() => {
     if (isOpen && activeTab === "view") {
@@ -448,15 +561,17 @@ export default function UploadModal({
   };
 
   const uploadFiles = async () => {
-    if (!appContext || !documentIdentifier || selectedFiles.length === 0)
+    if (!appContext || !documentIdentifier || !userId || selectedFiles.length === 0)
       return;
 
     setUploading(true);
     setUploadProgress(0);
     setError(null);
+    setUploadStatusAnnouncement('Uploading files');
 
     const uploader = new FileUploader();
     const apiClient = new ApiClient(appContext);
+    const nofoName = extractNofoName(documentIdentifier);
     const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
     let uploadedSize = 0;
 
@@ -467,16 +582,13 @@ export default function UploadModal({
           MIME_TYPES[fileExt as keyof typeof MIME_TYPES] ||
           "application/octet-stream";
 
-        // Create a file path that includes the document identifier as a folder
-        const filePath = documentIdentifier
-          ? `${documentIdentifier}/${file.name}`
-          : file.name;
-
         try {
-          // Get upload URL from API
+          // Get upload URL from API (path will be constructed as userId/nofoName/filename)
           const uploadUrl = await apiClient.knowledgeManagement.getUploadURL(
-            filePath,
-            fileType
+            file.name,  // Just the filename
+            fileType,
+            userId,     // User ID
+            nofoName    // NOFO name
           );
 
           // Upload the file
@@ -497,6 +609,7 @@ export default function UploadModal({
           console.error(`Error uploading file ${file.name}:`, error);
           setError(`Failed to upload ${file.name}. Please try again.`);
           setUploading(false);
+          setUploadStatusAnnouncement('');
           return;
         }
       }
@@ -504,13 +617,16 @@ export default function UploadModal({
       // All files uploaded successfully
       setSelectedFiles([]);
       setUploadProgress(100);
+      setUploadStatusAnnouncement('Files uploaded. Indexing documents.');
 
       // Sync Kendra after upload to ensure documents are indexed
       try {
         await apiClient.knowledgeManagement.syncKendra();
+        setUploadStatusAnnouncement('Indexing complete. Viewing uploaded files.');
       } catch (syncError) {
         console.error("Error syncing knowledge base:", syncError);
         // Non-critical error, don't show to user since files were uploaded successfully
+        setUploadStatusAnnouncement('Files uploaded successfully. Viewing uploaded files.');
       }
 
       // Refresh the list of existing files
@@ -521,26 +637,29 @@ export default function UploadModal({
       setTimeout(() => {
         setUploading(false);
         setActiveTab("view");
+        setUploadStatusAnnouncement('');
       }, 1000);
     } catch (error) {
       console.error("Error during upload:", error);
       setError("An error occurred during upload. Please try again.");
       setUploading(false);
+      setUploadStatusAnnouncement('');
     }
   };
 
   const deleteFile = async (fileName: string) => {
-    if (!appContext || !documentIdentifier) return;
+    if (!appContext || !documentIdentifier || !userId) return;
 
     try {
       const apiClient = new ApiClient(appContext);
-      // Form the full file key including the folder path
-      const fileKey = documentIdentifier
-        ? `${documentIdentifier}/${fileName}`
-        : fileName;
+      const nofoName = extractNofoName(documentIdentifier);
 
-      // Delete the file from S3
-      await apiClient.knowledgeManagement.deleteFile(fileKey);
+      // Delete the file from S3 (key will be constructed as userId/nofoName/filename)
+      await apiClient.knowledgeManagement.deleteFile(
+        userId,
+        nofoName,
+        fileName
+      );
 
       // Refresh the file list
       fetchExistingFiles();
@@ -551,17 +670,13 @@ export default function UploadModal({
   };
 
   const downloadFile = async (fileName: string) => {
-    if (!appContext || !documentIdentifier) return;
+    if (!appContext || !documentIdentifier || !userId) return;
 
     try {
       setDownloadingFile(fileName);
       setError(null);
       const apiClient = new ApiClient(appContext);
-
-      // Form the full file key including the folder path
-      const fileKey = documentIdentifier
-        ? `${documentIdentifier}/${fileName}`
-        : fileName;
+      const nofoName = extractNofoName(documentIdentifier);
 
       // Get a pre-signed URL for downloading the file
       try {
@@ -575,8 +690,10 @@ export default function UploadModal({
         // We're reusing the upload URL method which should return a pre-signed S3 URL
         // The proper approach would be to create a specific getDownloadURL method in the API
         const downloadUrl = await apiClient.knowledgeManagement.getUploadURL(
-          fileKey,
-          fileType
+          fileName,  // Just the filename
+          fileType,
+          userId,    // User ID
+          nofoName   // NOFO name
         );
 
         // Create a temporary anchor and trigger download
@@ -620,23 +737,53 @@ export default function UploadModal({
   if (!isOpen) return null;
 
   return (
-    <div style={styles.modalOverlay} onClick={onClose}>
+    <div 
+      style={styles.modalOverlay} 
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+    >
       <style>{spinKeyframes}</style>
-      <div style={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+      <div 
+        ref={modalRef}
+        style={styles.modalContainer} 
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="document"
+        aria-labelledby="upload-modal-title"
+      >
         <div style={styles.modalHeader}>
-          <h2 style={styles.modalTitle}>Manage Document Files</h2>
-          <button style={styles.closeButton} onClick={onClose}>
+          <h2 id="upload-modal-title" style={styles.modalTitle}>Manage Document Files</h2>
+          <button 
+            style={styles.closeButton} 
+            onClick={onClose}
+            aria-label="Close upload modal"
+          >
             <X size={20} />
           </button>
         </div>
 
-        <div style={styles.tabContainer}>
+        <div style={styles.tabContainer} role="tablist">
           <div
             style={{
               ...styles.tab,
               ...(activeTab === "upload" ? styles.activeTab : {}),
             }}
             onClick={() => setActiveTab("upload")}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActiveTab("upload");
+              }
+            }}
+            role="tab"
+            tabIndex={0}
+            aria-selected={activeTab === "upload"}
+            aria-controls="upload-panel"
+            id="upload-tab"
           >
             Upload New Files
           </div>
@@ -649,6 +796,18 @@ export default function UploadModal({
               setActiveTab("view");
               fetchExistingFiles();
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActiveTab("view");
+                fetchExistingFiles();
+              }
+            }}
+            role="tab"
+            tabIndex={0}
+            aria-selected={activeTab === "view"}
+            aria-controls="view-panel"
+            id="view-tab"
           >
             View Existing Files
           </div>
@@ -656,7 +815,7 @@ export default function UploadModal({
 
         <div style={styles.modalBody}>
           {activeTab === "upload" ? (
-            <>
+            <div role="tabpanel" aria-labelledby="upload-tab" id="upload-panel">
               <div
                 style={{
                   ...styles.dropZone,
@@ -666,13 +825,48 @@ export default function UploadModal({
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
-                onClick={() => document.getElementById("file-input")?.click()}
+                role="region"
+                aria-label="File upload area with drag and drop"
               >
-                <Upload size={40} style={styles.uploadIcon} />
-                <p style={styles.dropText}>Drag and drop your files here</p>
-                <p style={styles.browseText}>
-                  or <span style={styles.browseLink}>browse files</span>
-                </p>
+                {/* Visible button/label for clicking */}
+                <label
+                  htmlFor="file-input"
+                  style={{
+                    display: "inline-flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    padding: "20px",
+                    borderRadius: "8px",
+                    transition: "all 0.2s",
+                    width: "100%",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.outline = "2px solid #2c4fdb";
+                    e.currentTarget.style.outlineOffset = "2px";
+                    e.currentTarget.style.backgroundColor = "#f0f7ff";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.outline = "none";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0f7ff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                  tabIndex={0}
+                >
+                  <Upload size={40} style={styles.uploadIcon} aria-hidden="true" />
+                  <p style={styles.dropText}>Drag and drop your files here</p>
+                  <p style={styles.browseText} id="upload-instructions">
+                    or <span style={styles.browseLink}>browse files</span>
+                  </p>
+                </label>
+                
+                {/* Hidden file input, triggered by label */}
                 <input
                   id="file-input"
                   type="file"
@@ -680,10 +874,16 @@ export default function UploadModal({
                   style={styles.fileInput}
                   onChange={handleFileInput}
                   accept={SUPPORTED_EXTENSIONS.join(",")}
+                  aria-describedby="upload-instructions"
                 />
               </div>
 
-              {error && <p style={styles.errorText}>{error}</p>}
+              {error && <div role="alert" style={styles.errorText}>{error}</div>}
+
+              {/* Upload status announcement for screen readers */}
+              <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+                {uploadStatusAnnouncement}
+              </div>
 
               {selectedFiles.length > 0 && (
                 <div style={styles.fileList}>
@@ -703,6 +903,7 @@ export default function UploadModal({
                         style={styles.deleteButton}
                         onClick={() => removeFile(index)}
                         disabled={uploading}
+                        aria-label={`Remove ${file.name} from upload queue`}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -718,6 +919,7 @@ export default function UploadModal({
                     }}
                     onClick={uploadFiles}
                     disabled={uploading || selectedFiles.length === 0}
+                    aria-label={uploading ? `Uploading files, ${uploadProgress}% complete` : `Upload ${selectedFiles.length} selected files`}
                   >
                     <Upload size={16} />
                     {uploading
@@ -739,19 +941,25 @@ export default function UploadModal({
                   )}
                 </div>
               )}
-            </>
+            </div>
           ) : (
-            <div style={styles.fileList}>
+            <div style={styles.fileList} role="tabpanel" aria-labelledby="view-tab" id="view-panel">
               <div style={styles.fileListHeader}>
                 <p>Current Files</p>
                 <button
                   style={styles.refreshButton}
                   onClick={fetchExistingFiles}
                   disabled={loadingFiles || !isOpen}
+                  aria-label="Refresh file list"
                 >
                   <RefreshCw size={14} />{" "}
                   {loadingFiles ? "Loading..." : "Refresh"}
                 </button>
+              </div>
+
+              {/* Loading announcement */}
+              <div role="status" aria-live="polite" className="sr-only">
+                {loadingFiles ? "Loading files" : ""}
               </div>
 
               {loadingFiles ? (
@@ -769,6 +977,15 @@ export default function UploadModal({
                     <div
                       style={styles.fileDetails}
                       onClick={() => downloadFile(file.name)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          downloadFile(file.name);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Download ${file.name}`}
                     >
                       <p style={styles.fileName}>
                         {file.name}
@@ -793,6 +1010,7 @@ export default function UploadModal({
                       onClick={() => downloadFile(file.name)}
                       disabled={downloadingFile === file.name}
                       title="Download file"
+                      aria-label={`Download ${file.name}`}
                     >
                       {downloadingFile === file.name ? (
                         <div
@@ -819,6 +1037,7 @@ export default function UploadModal({
                       onClick={() => deleteFile(file.name)}
                       disabled={downloadingFile === file.name}
                       title="Delete file"
+                      aria-label={`Delete ${file.name}`}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -826,7 +1045,7 @@ export default function UploadModal({
                 ))
               )}
 
-              {error && <p style={styles.errorText}>{error}</p>}
+              {error && <div role="alert" style={styles.errorText}>{error}</div>}
             </div>
           )}
         </div>
@@ -838,6 +1057,7 @@ export default function UploadModal({
               ...styles.cancelButton,
             }}
             onClick={onClose}
+            aria-label="Close modal"
           >
             Close
           </button>

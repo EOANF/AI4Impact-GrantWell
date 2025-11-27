@@ -44,6 +44,7 @@ export class ChatBotApi extends Construct {
     const knowledgeBase = new KnowledgeBaseStack(this, "KnowledgeBaseStack", {
       openSearch: openSearch,
       s3bucket: buckets.ffioNofosBucket,
+      userDocumentsBucket: buckets.userDocumentsBucket,
     });
 
     const restBackend = new RestBackendAPI(this, "RestBackend", {});
@@ -60,10 +61,13 @@ export class ChatBotApi extends Construct {
       sessionTable: tables.historyTable,
       feedbackTable: tables.feedbackTable,
       draftTable: tables.draftTable,
+      nofoMetadataTable: tables.nofoMetadataTable,
       feedbackBucket: buckets.feedbackBucket,
       knowledgeBase: knowledgeBase.knowledgeBase,
       knowledgeBaseSource: knowledgeBase.dataSource,
+      userDocumentsDataSource: knowledgeBase.userDocumentsDataSource,
       ffioNofosBucket: buckets.ffioNofosBucket,
+      userDocumentsBucket: buckets.userDocumentsBucket,
       grantsGovApiKey: props.grantsGovApiKey,
     });
 
@@ -270,6 +274,18 @@ export class ChatBotApi extends Construct {
       path: "/kb-sync/get-last-sync",
       methods: [apigwv2.HttpMethod.GET],
       integration: kbLastSyncAPIIntegration,
+      authorizer: httpAuthorizer,
+    });
+
+    // Backfill NOFO metadata endpoint
+    const backfillNofoMetadataAPIIntegration = new HttpLambdaIntegration(
+      "BackfillNofoMetadataAPIIntegration",
+      lambdaFunctions.backfillNofoMetadataFunction
+    );
+    restBackend.restAPI.addRoutes({
+      path: "/backfill-nofo-metadata",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: backfillNofoMetadataAPIIntegration,
       authorizer: httpAuthorizer,
     });
 

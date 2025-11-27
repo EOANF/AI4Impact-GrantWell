@@ -4,6 +4,7 @@ import React, {
   useContext,
   useCallback,
   useMemo,
+  useRef,
 } from "react";
 import { Auth } from "aws-amplify";
 import { ApiClient } from "../../common/api-client/api-client";
@@ -44,7 +45,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   headerDescription: {
     fontSize: "14px",
-    color: "#6b7280",
+    color: "#5a6169",
     marginTop: "4px",
   },
   buttonContainer: {
@@ -67,7 +68,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "white",
   },
   dangerButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: "#d32f2f",
     color: "white",
   },
   disabledButton: {
@@ -121,11 +122,11 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    color: "#6b7280",
+    color: "#5a6169",
     fontSize: "14px",
   },
   calendarIcon: {
-    color: "#9ca3af",
+    color: "#6e747f",
   },
   emptyState: {
     display: "flex",
@@ -133,7 +134,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     padding: "60px 20px",
-    color: "#6b7280",
+    color: "#5a6169",
     textAlign: "center" as const,
   },
   emptyStateTitle: {
@@ -164,7 +165,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   pageInfo: {
     fontSize: "14px",
-    color: "#6b7280",
+    color: "#5a6169",
   },
   pageSizeSelect: {
     padding: "4px 8px",
@@ -254,6 +255,10 @@ export default function Sessions(props: SessionsProps) {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const navigate = useNavigate();
 
+  // Refs for delete modal focus management
+  const deleteModalRef = useRef<HTMLDivElement>(null);
+  const deleteModalPreviousFocusRef = useRef<HTMLElement | null>(null);
+
   const { documentIdentifier } = props;
 
   const getSessions = useCallback(async () => {
@@ -288,6 +293,80 @@ export default function Sessions(props: SessionsProps) {
 
     loadSessions();
   }, [appContext, getSessions, props.toolsOpen, documentIdentifier]);
+
+  // Focus management for delete modal
+  useEffect(() => {
+    if (!showModalDelete) return;
+
+    // Store the currently focused element
+    deleteModalPreviousFocusRef.current = document.activeElement as HTMLElement;
+
+    // Focus the modal after a short delay
+    setTimeout(() => {
+      const firstFocusable = deleteModalRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      firstFocusable?.focus();
+    }, 100);
+
+    // Restore focus when modal closes
+    return () => {
+      // Only restore focus if the element still exists in the DOM
+      if (deleteModalPreviousFocusRef.current && document.body.contains(deleteModalPreviousFocusRef.current)) {
+        deleteModalPreviousFocusRef.current.focus();
+      }
+    };
+  }, [showModalDelete]);
+
+  // Focus trap handler for delete modal
+  useEffect(() => {
+    if (!showModalDelete || !deleteModalRef.current) return;
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      const focusableElements = deleteModalRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+
+      if (!focusableElements || focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      // Check if currently focused element is inside the modal
+      const activeElement = document.activeElement as HTMLElement;
+      const isInsideModal = deleteModalRef.current?.contains(activeElement);
+
+      // If focus is outside the modal, bring it back
+      if (!isInsideModal) {
+        e.preventDefault();
+        firstElement.focus();
+        return;
+      }
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowModalDelete(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleTabKey);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleTabKey);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [showModalDelete]);
 
   const deleteSelectedSessions = async () => {
     if (!appContext || selectedItems.length === 0) return;
@@ -385,9 +464,20 @@ export default function Sessions(props: SessionsProps) {
   return (
     <div style={styles.container}>
       {showModalDelete && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <div style={styles.modalHeader}>
+        <div 
+          style={styles.modalOverlay}
+          onClick={() => setShowModalDelete(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-modal-title"
+        >
+          <div 
+            ref={deleteModalRef}
+            style={styles.modal}
+            onClick={(e) => e.stopPropagation()}
+            role="document"
+          >
+            <div id="delete-modal-title" style={styles.modalHeader}>
               {`Delete session${selectedItems.length > 1 ? "s" : ""}`}
             </div>
             <div style={styles.modalContent}>
@@ -400,12 +490,28 @@ export default function Sessions(props: SessionsProps) {
               <button
                 style={{ ...styles.button, ...styles.primaryButton }}
                 onClick={() => setShowModalDelete(false)}
+                onFocus={(e) => {
+                  e.currentTarget.style.outline = "2px solid #2c4fdb";
+                  e.currentTarget.style.outlineOffset = "2px";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.outline = "none";
+                }}
+                aria-label="Cancel delete"
               >
                 Cancel
               </button>
               <button
                 style={{ ...styles.button, ...styles.dangerButton }}
                 onClick={deleteSelectedSessions}
+                onFocus={(e) => {
+                  e.currentTarget.style.outline = "2px solid #2c4fdb";
+                  e.currentTarget.style.outlineOffset = "2px";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.outline = "none";
+                }}
+                aria-label={`Confirm delete ${selectedItems.length} session${selectedItems.length > 1 ? 's' : ''}`}
               >
                 OK
               </button>

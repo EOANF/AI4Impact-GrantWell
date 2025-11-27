@@ -1,21 +1,24 @@
-import React, { useContext, useState, useEffect, CSSProperties } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Auth } from 'aws-amplify';
-import { ApiClient } from '../../common/api-client/api-client';
-import { AppContext } from '../../common/app-context';
-import { v4 as uuidv4 } from 'uuid';
-import '../../styles/base-page.css';
-import IntegratedSearchBar from '../../components/search/IntegratedSearchBar';
-import { addToRecentlyViewed, getRecentlyViewed, cleanupRecentlyViewed } from "../../utils/recently-viewed-nofos";
+import React, { useContext, useState, useEffect, CSSProperties } from "react";
+import { useNavigate } from "react-router-dom";
+import { Auth } from "aws-amplify";
+import { ApiClient } from "../../common/api-client/api-client";
+import { AppContext } from "../../common/app-context";
+import { v4 as uuidv4 } from "uuid";
+import "../../styles/base-page.css";
+import IntegratedSearchBar from "../../components/search/IntegratedSearchBar";
+import {
+  addToRecentlyViewed,
+  getRecentlyViewed,
+  cleanupRecentlyViewed,
+} from "../../utils/recently-viewed-nofos";
 
-export default function Welcome({ theme }) {
+export default function Welcome() {
   // **State Variables**
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [recentlyViewedNOFOs, setRecentlyViewedNOFOs] = useState([]);
-  const [showHowToModal, setShowHowToModal] = useState(false);
 
   // **Context and Navigation**
   const appContext = useContext(AppContext);
@@ -29,7 +32,7 @@ export default function Welcome({ theme }) {
   };
 
   const mainTextColor = "#006499";
-  const bodyTextColor = "#6c757d";
+  const bodyTextColor = "#5a5a5a";
   const primaryBlue = "#0073bb"; // Match header blue color
 
   const containerStyle: CSSProperties = {
@@ -60,7 +63,7 @@ export default function Welcome({ theme }) {
   const disabledButtonStyle: CSSProperties = {
     ...buttonStyle,
     backgroundColor: "#f0f0f0",
-    color: "#aaaaaa",
+    color: "#707070",
     cursor: "not-allowed",
     boxShadow: "none",
   };
@@ -112,10 +115,10 @@ export default function Welcome({ theme }) {
   // Filter out archived NOFOs from history when documents change
   useEffect(() => {
     if (documents.length === 0) return;
-    
+
     // Get the current list of NOFO names
-    const activeNofoNames = documents.map(doc => doc.label);
-    
+    const activeNofoNames = documents.map((doc) => doc.label);
+
     // Clean up recently viewed NOFOs and update state
     const filteredHistory = cleanupRecentlyViewed(activeNofoNames);
     setRecentlyViewedNOFOs(filteredHistory);
@@ -140,17 +143,30 @@ export default function Welcome({ theme }) {
     try {
       const result = await apiClient.landingPage.getNOFOs();
       const folders = result.folders || [];
-      console.log(`Received ${folders.length} active NOFOs for landing page display`);
-      
+      console.log(
+        `Received ${folders.length} active NOFOs for landing page display`
+      );
+
       // For debugging: Check if we have nofoData with status information too
       if (result.nofoData) {
-        const activeCount = result.nofoData.filter(nofo => nofo.status === 'active').length;
-        const archivedCount = result.nofoData.filter(nofo => nofo.status === 'archived').length;
-        console.log(`NOFO status breakdown - Active: ${activeCount}, Archived: ${archivedCount}`);
+        const activeCount = result.nofoData.filter(
+          (nofo) => nofo.status === "active"
+        ).length;
+        const archivedCount = result.nofoData.filter(
+          (nofo) => nofo.status === "archived"
+        ).length;
+        console.log(
+          `NOFO status breakdown - Active: ${activeCount}, Archived: ${archivedCount}`
+        );
       }
-      
+
+      // Sort folders alphabetically (case-insensitive)
+      const sortedFolders = [...folders].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      );
+
       setDocuments(
-        folders.map((document) => ({
+        sortedFolders.map((document) => ({
           label: document,
           value: document + "/",
         }))
@@ -192,76 +208,84 @@ export default function Welcome({ theme }) {
           marginBottom: "20px",
         }}
       >
-        Recent Grants
+        Recently viewed funding calls (NOFOs)
       </h2>
       {recentlyViewedNOFOs.length > 0 ? (
-        recentlyViewedNOFOs.slice(0, 6).map(
-          (
-            nofo,
-            index
-          ) => (
-            <div
-              key={index}
+        recentlyViewedNOFOs.slice(0, 6).map((nofo, index) => (
+          <button
+            key={index}
+            style={{
+              padding: "15px",
+              border: "1px solid #e1e4e8",
+              borderRadius: "8px",
+              backgroundColor: "#f9f9f9",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              transition: "all 0.2s ease",
+              cursor: "pointer",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              width: "100%",
+              textAlign: "left",
+            }}
+            onClick={() =>
+              handleNOFOSelect(
+                `/landing-page/basePage/checklists/${encodeURIComponent(
+                  nofo.value
+                )}`,
+                nofo
+              )
+            }
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.outline = "2px solid #2c4fdb";
+              e.currentTarget.style.outlineOffset = "2px";
+              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.outline = "none";
+              e.currentTarget.style.outlineOffset = "0";
+              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+            aria-label={`View ${nofo.label}`}
+          >
+            <span
               style={{
-                padding: "15px",
-                border: "1px solid #e1e4e8",
-                borderRadius: "8px",
-                backgroundColor: "#f9f9f9",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                transition: "all 0.2s ease",
-                cursor: "pointer",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-              onClick={() =>
-                handleNOFOSelect(
-                  `/landing-page/basePage/checklists/${encodeURIComponent(
-                    nofo.value
-                  )}`,
-                  nofo
-                )
-              }
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 4px 8px rgba(0, 0, 0, 0.15)";
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 2px 4px rgba(0, 0, 0, 0.1)";
-                e.currentTarget.style.transform = "translateY(0)";
+                fontSize: "16px",
+                fontWeight: "bold",
+                display: "block",
+                marginBottom: "8px",
+                color: primaryBlue,
               }}
             >
-              <span
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  display: "block",
-                  marginBottom: "8px",
-                  color: primaryBlue,
-                }}
-              >
-                {nofo.label}
-              </span>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: "#6c757d",
-                  marginTop: "auto",
-                }}
-              >
-                <span>Last viewed: {nofo.lastViewed}</span>
-              </div>
+              {nofo.label}
+            </span>
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#5a5a5a",
+                marginTop: "auto",
+              }}
+            >
+              <span>Last viewed: {nofo.lastViewed}</span>
             </div>
-          )
-        )
+          </button>
+        ))
       ) : (
         <p
           style={{
             gridColumn: "span 3", // Span all 3 columns
-            color: "#6c757d",
+            color: "#6b737b",
             fontSize: "16px",
             textAlign: "center",
           }}
@@ -481,14 +505,26 @@ export default function Welcome({ theme }) {
             borderRadius: "8px",
             backgroundColor: "#f9f9f9",
             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            textAlign: "center", 
+            textAlign: "center",
           }}
         >
           <a
             href={resource.href}
             target="_blank"
             rel="noopener noreferrer"
-            style={linkStyle}
+            style={{
+              ...linkStyle,
+              textDecoration: "none",
+              display: "block",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.outline = "2px solid #2c4fdb";
+              e.currentTarget.style.outlineOffset = "2px";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.outline = "none";
+              e.currentTarget.style.outlineOffset = "0";
+            }}
           >
             <span
               style={{
@@ -502,16 +538,16 @@ export default function Welcome({ theme }) {
             >
               {resource.title}
             </span>
+            <div
+              style={{
+                fontSize: "14px",
+                color: bodyTextColor,
+                textAlign: "center",
+              }}
+            >
+              {resource.description}
+            </div>
           </a>
-          <div
-            style={{
-              fontSize: "14px",
-              color: bodyTextColor,
-              textAlign: "center",
-            }}
-          >
-            {resource.description}
-          </div>
         </div>
       ))}
     </div>
@@ -520,7 +556,32 @@ export default function Welcome({ theme }) {
   // **Render**
   return (
     <div style={containerStyle}>
-      <div
+      {/* Skip Navigation Link for Accessibility */}
+      <a
+        href="#main-content"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          zIndex: 999,
+          padding: "10px 20px",
+          backgroundColor: primaryBlue,
+          color: "white",
+          textDecoration: "none",
+          borderRadius: "4px",
+          fontWeight: "600",
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.left = "10px";
+          e.currentTarget.style.top = "10px";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.left = "-9999px";
+        }}
+      >
+        Skip to main content
+      </a>
+      <main
+        id="main-content"
         style={{
           maxWidth: "950px",
           margin: "0 auto",
@@ -570,7 +631,7 @@ export default function Welcome({ theme }) {
               GrantWell
             </h1>
           </div>
-          
+
           {/* Subtitle below both */}
           <p
             style={{
@@ -583,205 +644,241 @@ export default function Welcome({ theme }) {
               textAlign: "center",
             }}
           >
-            An AI tool to help Massachusetts communities pursue federal funding opportunities 
+            Free AI powered tool designed for finding and writing grants
           </p>
         </div>
 
         {/* New integrated search bar */}
-        <IntegratedSearchBar 
+        <IntegratedSearchBar
           documents={documents}
           onSelectDocument={setSelectedDocument}
           isLoading={loading}
         />
-        
-        {/* CTA Buttons: View Key Requirements, Write Project Narrative, Get Grant Help */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: '10px',
-            margin: '28px 0 8px 0',
-            width: '100%',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            onClick={() => {
-              if (selectedDocument) {
+
+        {/* CTA Buttons - shown when grant is selected */}
+        {selectedDocument && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: "10px",
+              margin: "28px 0 8px 0",
+              width: "100%",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              onClick={() => {
                 handleNOFOSelect(
-                  `/landing-page/basePage/checklists/${encodeURIComponent(selectedDocument.value)}`,
+                  `/landing-page/basePage/checklists/${encodeURIComponent(
+                    selectedDocument.value
+                  )}`,
                   selectedDocument
                 );
-              }
-            }}
-            disabled={!selectedDocument}
-            style={{
-              background: selectedDocument ? '#0073BB' : '#f0f0f0',
-              color: selectedDocument ? 'white' : '#888',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '10px 22px',
-              fontSize: '15px',
-              fontWeight: 500,
-              cursor: selectedDocument ? 'pointer' : 'not-allowed',
-              transition: 'background 0.2s',
-              minWidth: '180px',
-            }}
-            aria-label="View Key Requirements"
-          >
-            View Key Requirements
-          </button>
+              }}
+              style={{
+                background: "#0073BB",
+                color: "white",
+                border: "none",
+                borderRadius: "20px",
+                padding: "10px 22px",
+                fontSize: "15px",
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "background 0.2s, box-shadow 0.2s, outline 0.2s",
+                minWidth: "180px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#005A94";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#0073BB";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline = "2px solid #2c4fdb";
+                e.currentTarget.style.outlineOffset = "2px";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 4px rgba(44, 79, 219, 0.2)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+                e.currentTarget.style.outlineOffset = "0px";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              aria-label="View Key Requirements"
+            >
+              View Key Requirements
+            </button>
 
-          <button
-            onClick={() => {
-              if (selectedDocument) {
+            <button
+              onClick={() => {
                 // Track the NOFO as recently viewed before navigating to document editor
                 const updatedHistory = addToRecentlyViewed(selectedDocument);
                 setRecentlyViewedNOFOs(updatedHistory);
-                
-                // Navigate to document editor
-                window.location.href = `/document-editor?nofo=${encodeURIComponent(selectedDocument.value)}`;
-              }
-            }}
-            disabled={!selectedDocument}
-            style={{
-              background: selectedDocument ? '#0073BB' : '#f0f0f0',
-              color: selectedDocument ? 'white' : '#888',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '10px 22px',
-              fontSize: '15px',
-              fontWeight: 500,
-              cursor: selectedDocument ? 'pointer' : 'not-allowed',
-              transition: 'background 0.2s',
-              minWidth: '180px',
-            }}
-            aria-label="Write Project Narrative"
-          >
-            Write Project Narrative
-          </button>
 
-          <button
-            onClick={() => {
-              if (selectedDocument) {
+                // Navigate to document editor
+                window.location.href = `/document-editor?nofo=${encodeURIComponent(
+                  selectedDocument.value
+                )}`;
+              }}
+              style={{
+                background: "#0073BB",
+                color: "white",
+                border: "none",
+                borderRadius: "20px",
+                padding: "10px 22px",
+                fontSize: "15px",
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "background 0.2s, box-shadow 0.2s, outline 0.2s",
+                minWidth: "180px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#005A94";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#0073BB";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline = "2px solid #2c4fdb";
+                e.currentTarget.style.outlineOffset = "2px";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 4px rgba(44, 79, 219, 0.2)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+                e.currentTarget.style.outlineOffset = "0px";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              aria-label="Write Project Narrative"
+            >
+              Write Project Narrative
+            </button>
+
+            <button
+              onClick={() => {
                 // Track the NOFO as recently viewed before navigating to chatbot
                 const updatedHistory = addToRecentlyViewed(selectedDocument);
                 setRecentlyViewedNOFOs(updatedHistory);
-                
+
                 // Navigate to chatbot
                 const newSessionId = uuidv4();
-                window.location.href = `/chatbot/playground/${newSessionId}?folder=${encodeURIComponent(selectedDocument.value)}`;
-              }
-            }}
-            disabled={!selectedDocument}
-            style={{
-              background: selectedDocument ? '#0073BB' : '#f0f0f0',
-              color: selectedDocument ? 'white' : '#888',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '10px 22px',
-              fontSize: '15px',
-              fontWeight: 500,
-              cursor: selectedDocument ? 'pointer' : 'not-allowed',
-              transition: 'background 0.2s',
-              minWidth: '180px',
-            }}
-            aria-label="Get Grant Help"
-          >
-            Get Grant Help
-          </button>
-        </div>
-
-        {/* How to Use hover bar */}
-        <div
-          style={{
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            marginTop: '10px',
-          }}
-          onMouseEnter={() => setShowHowToModal(true)}
-          onMouseLeave={() => setShowHowToModal(false)}
-        >
-          <button
-            onClick={() => setShowHowToModal(!showHowToModal)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#0073BB',
-              fontSize: '14px',
-              cursor: 'pointer',
-              padding: '5px 10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              transition: 'color 0.15s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#005A94';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#0073BB';
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 8L12 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M12 18.01L12.01 17.9989" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            How to use?
-          </button>
-
-          {showHowToModal && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '32px',
-                right: '50%',
-                transform: 'translateX(50%)',
-                minWidth: '320px',
-                maxWidth: '500px',
-                background: '#fff',
-                border: '1px solid #e0e0e0',
-                borderRadius: '10px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.13)',
-                padding: '20px 20px 16px 20px',
-                zIndex: 1000,
-                fontSize: '13px',
-                color: '#444',
-                animation: 'fadeIn 0.2s',
+                window.location.href = `/chatbot/playground/${newSessionId}?folder=${encodeURIComponent(
+                  selectedDocument.value
+                )}`;
               }}
-              role="dialog"
-              aria-modal="true"
-            >
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontWeight: 600, color: '#0073BB', fontSize: '14px' }}>How to Use?</span>
-              </div>
-              <div style={{
-                background: '#f6fafd',
-                border: '1px solid #e0e0e0',
-                borderRadius: '7px',
-                color: '#0073BB',
+              style={{
+                background: "#0073BB",
+                color: "white",
+                border: "none",
+                borderRadius: "20px",
+                padding: "10px 22px",
+                fontSize: "15px",
                 fontWeight: 500,
-                fontSize: '13.5px',
-                padding: '10px 12px',
-                marginBottom: '12px',
-                textAlign: 'center',
-              }}>
-                Select a grant to unlock features above
-              </div>
-              <ul style={{ margin: '10px 0 0 18px', padding: 0, color: '#666', fontSize: '12.5px', lineHeight: 1.7 }}>
-                <li><b style={{ color: '#0073BB' }}>View Key Requirements:</b> View summary of eligibility, required documents, narrative sections, and deadlines for the selected grant.</li>
-                <li><b style={{ color: '#0073BB' }}>Write Project Narrative:</b> Open the editor to draft and edit your grant application narrative.</li>
-                <li><b style={{ color: '#0073BB' }}>Get Grant Help:</b> Open the GrantWell AI chatbot to ask questions about the grant.</li>
-              </ul>
-            </div>
-          )}
-        </div>
+                cursor: "pointer",
+                transition: "background 0.2s, box-shadow 0.2s, outline 0.2s",
+                minWidth: "180px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#005A94";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#0073BB";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline = "2px solid #2c4fdb";
+                e.currentTarget.style.outlineOffset = "2px";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 4px rgba(44, 79, 219, 0.2)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+                e.currentTarget.style.outlineOffset = "0px";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              aria-label="Get Grant Help"
+            >
+              Get Grant Help
+            </button>
+          </div>
+        )}
+
+        {/* How it works section - always visible */}
+        <section
+          aria-labelledby="how-it-works-heading"
+          style={{
+            margin: "20px auto 8px auto",
+            padding: "0",
+            maxWidth: "650px",
+            textAlign: "center",
+          }}
+        >
+          {/* Main Heading */}
+          <h2
+            id="how-it-works-heading"
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#006499",
+              margin: "0 0 12px 0",
+              textAlign: "center",
+            }}
+          >
+            How it works
+          </h2>
+
+          {/* Single paragraph with inline links */}
+          <p
+            style={{
+              fontSize: "15px",
+              color: "#555",
+              lineHeight: "1.6",
+              margin: "0",
+            }}
+          >
+            Search for a grant above, select one from the results, then choose
+            an action:{" "}
+            <strong style={{ color: "#0073BB", fontWeight: "600" }}>
+              View Key Requirements
+            </strong>{" "}
+            to see eligibility and other NOFO requirements,{" "}
+            <strong style={{ color: "#0073BB", fontWeight: "600" }}>
+              Write Project Narrative
+            </strong>{" "}
+            to draft your proposal with AI assistance, or{" "}
+            <strong style={{ color: "#0073BB", fontWeight: "600" }}>
+              Get Grant Help
+            </strong>{" "}
+            to chat with our AI assistant.
+          </p>
+
+          {/* Screen reader notes - hidden visually */}
+          <div
+            style={{
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              padding: "0",
+              margin: "-1px",
+              overflow: "hidden",
+              clip: "rect(0, 0, 0, 0)",
+              whiteSpace: "nowrap",
+              border: "0",
+            }}
+            role="note"
+            aria-label="Screen reader note"
+          >
+            Screen-reader note: The search bar is the first interactive element
+            on this page. After selecting a grant, navigate to the next heading
+            or use "next button" to reach the action buttons. Each button loads
+            a new page or tool. Use heading navigation to explore the content on
+            each screen.
+          </div>
+        </section>
 
         {/* Add spacing before next section */}
-        <div style={{ marginBottom: '20px' }} />
+        <div style={{ marginBottom: "20px" }} />
 
         <ContentBox backgroundColor="#F6FCFF">
           <HistoryPanel />
@@ -805,19 +902,109 @@ export default function Welcome({ theme }) {
           }
           backgroundColor="#006499"
         /> */}
+      </main>
 
+      {/* Footer Section */}
+      <footer>
         {/* Affiliations Section */}
-        <InfoBanner
-          title="Our Affiliations"
-          height="125px"
-          description=""
-          imageSrc="/images/burnesLogo.png"
-          imageAlt="Burnes Center Logo"
-          linkUrl={"https://burnes.northeastern.edu/"}
-          titleAlign="left"
-          imagePosition="right"
-          imageWidth="200px"
-        />
+        <div
+          style={{
+            backgroundColor: "#06293d",
+            padding: "30px 20px",
+            marginBlockEnd: "0",
+            width: "100vw",
+            position: "relative",
+            left: "50%",
+            right: "50%",
+            marginLeft: "-50vw",
+            marginRight: "-50vw",
+            marginTop: "0px",
+            marginBottom: "0px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              maxWidth: "900px",
+              margin: "0 auto",
+              gap: "40px",
+              flexWrap: "wrap",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "28px",
+                color: "#ffffff",
+                margin: "0",
+                fontWeight: "600",
+                flex: "0 0 auto",
+              }}
+            >
+              Our Affiliations
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "50px",
+                flex: "0 1 auto",
+              }}
+            >
+              <a
+                href="https://www.mass.gov/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "transform 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                aria-label="Visit Massachusetts Government website"
+              >
+                <img
+                  src="/images/stateseal-color.png"
+                  alt="Massachusetts State Seal"
+                  style={{ width: "100px", height: "auto" }}
+                />
+              </a>
+              <a
+                href="https://burnes.northeastern.edu/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "transform 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                aria-label="Visit Burnes Center for Social Change at Northeastern University"
+              >
+                <img
+                  src="/images/burnesLogo.png"
+                  alt="Burnes Center for Social Change Logo"
+                  style={{ width: "200px", height: "auto" }}
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Creative Commons License */}
         <InfoBanner
           title=""
           height="100px"
@@ -829,8 +1016,9 @@ export default function Welcome({ theme }) {
           titleFontSize="16px"
           imagePosition="left"
           imageWidth="75px"
+          titleAlign="center"
         />
-      </div>
+      </footer>
     </div>
   );
 }

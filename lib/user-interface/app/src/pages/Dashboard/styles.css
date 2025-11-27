@@ -1,8 +1,8 @@
 /* Dashboard container styles */
 .dashboard-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 30px;
+  padding: 20px 30px;
   background-color: #f9fafc;
   min-height: 100vh;
   color: #333;
@@ -24,13 +24,14 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
+  margin-top: 10px;
 }
 
 .dashboard-header h1 {
   color: #006499;
   margin: 0;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 600;
 }
 
@@ -57,7 +58,7 @@ html, body {
 /* Tab controls */
 .tab-controls {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -87,7 +88,7 @@ html, body {
 .search-container {
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .search-input-wrapper {
@@ -151,14 +152,14 @@ html, body {
 .table-container {
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
+  overflow: visible;
+  margin-bottom: 80px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
 }
 
 .table-header {
   display: grid;
-  grid-template-columns: 3fr 1fr 1fr;
+  grid-template-columns: 5fr 1fr 1fr;
   background-color: #f5f8fc;
   font-weight: 600;
   border-bottom: 1px solid #e0e0e0;
@@ -168,9 +169,18 @@ html, body {
 }
 
 .header-cell {
-  padding: 15px 16px;
-  font-size: 0.9rem;
+  padding: 12px 16px;
+  font-size: 0.875rem;
   color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Right-align the Actions header to match the action buttons */
+.header-cell:last-child {
+  text-align: right;
+  padding-right: 16px;
 }
 
 .table-body {
@@ -180,9 +190,15 @@ html, body {
 
 .table-row {
   display: grid;
-  grid-template-columns: 3fr 1fr 1fr;
+  grid-template-columns: 5fr 1fr 1fr;
   border-bottom: 1px solid #e0e0e0;
   transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+}
+
+.table-row:hover {
+  z-index: 10;
 }
 
 .table-row:last-child {
@@ -194,9 +210,10 @@ html, body {
 }
 
 .row-cell {
-  padding: 15px 16px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
+  font-size: 0.9rem;
 }
 
 .no-data {
@@ -310,6 +327,7 @@ html, body {
   justify-content: flex-end;
   align-items: center;
   gap: 8px;
+  padding-right: 16px;
 }
 
 /* Row actions menu styling */
@@ -384,6 +402,32 @@ html, body {
 .nofo-name {
   font-weight: 500;
   color: #333;
+}
+
+/* Expiry date styling */
+.expiry-date {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 400;
+}
+
+.expiry-date.no-date {
+  color: #999;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Expiry date styling */
+.expiry-date {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 400;
+}
+
+.expiry-date.no-date {
+  color: #999;
+  font-style: italic;
+  font-weight: 400;
 }
 
 /* File upload styling */
@@ -852,9 +896,10 @@ select.form-input {
 .breadcrumb {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  margin-top: 5px;
   color: #666;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .breadcrumb-item {
@@ -986,7 +1031,7 @@ select.form-input {
 
 .action-button.delete {
   background-color: #fff0f0;
-  color: #e74c3c;
+  color: #c0392b;
 }
 
 .action-button.delete:hover {
@@ -1084,66 +1129,82 @@ select.form-input {
   flex-wrap: wrap;
 }
 
-/* Action button variations */
+/* Action button variations - unified styling with different colors */
 .action-button.invite-button,
-.action-button.add-button {
+.action-button.add-button,
+.action-button.scraper-button {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
   border-radius: 25px;
   font-weight: 500;
+  font-size: 14px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.invite-button {
-  background-color: #4a90e2;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
   color: white;
 }
 
-.action-button.invite-button:hover {
-  background-color: #3a80d2;
+/* Invite User Button - Blue */
+.action-button.invite-button {
+  background-color: #2b6cb0;
+}
+
+.action-button.invite-button:hover:not(:disabled) {
+  background-color: #2557a0;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+.action-button.invite-button:focus {
+  outline: 2px solid #2c4fdb;
+  outline-offset: 2px;
+}
+
+/* Add Grant Button - Teal/Blue */
 .action-button.add-button {
   background-color: #0073BB;
-  color: white;
 }
 
-.action-button.add-button:hover {
+.action-button.add-button:hover:not(:disabled) {
   background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+.action-button.add-button:focus {
+  outline: 2px solid #2c4fdb;
+  outline-offset: 2px;
+}
+
+/* Auto-Scrape NOFOs Button - Green */
 .action-button.scraper-button {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  background-color: #1e7e34;
 }
 
 .action-button.scraper-button:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+  background-color: #196d2e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+.action-button.scraper-button:focus {
+  outline: 2px solid #2c4fdb;
+  outline-offset: 2px;
+}
+
+/* Disabled state for all buttons */
+.action-button.invite-button:disabled,
+.action-button.add-button:disabled,
 .action-button.scraper-button:disabled {
-  background-color: #6c757d;
+  background-color: #6b737b;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  opacity: 0.6;
 }
 
 .button-icon {
@@ -1235,4 +1296,130 @@ select.form-input {
   border-top: 3px solid #0073BB;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* Grant Actions Dropdown Styles */
+.grant-actions-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.actions-dropdown-button {
+  background: transparent;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667085;
+  transition: all 0.2s ease;
+}
+
+.actions-dropdown-button:hover {
+  background-color: #f9fafb;
+  border-color: #98a2b3;
+  color: #344054;
+}
+
+.actions-dropdown-button:focus {
+  outline: 2px solid #FFB700;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 183, 0, 0.2);
+}
+
+.actions-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: white;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdown-appear 0.15s ease-out;
+}
+
+/* Drop-up variant for bottom rows */
+.actions-dropdown-menu.drop-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  animation: dropdown-appear-up 0.15s ease-out;
+}
+
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdown-appear-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.dropdown-menu-item:hover {
+  background-color: #f9fafb;
+}
+
+.dropdown-menu-item:focus {
+  outline: 2px solid #FFB700;
+  outline-offset: -2px;
+  background-color: #f9fafb;
+}
+
+.dropdown-menu-item .menu-icon {
+  color: #667085;
+  flex-shrink: 0;
+}
+
+.dropdown-menu-item:hover .menu-icon {
+  color: #344054;
+}
+
+.dropdown-menu-item.delete-item {
+  color: #c0392b;
+  border-top: 1px solid #f2f4f7;
+}
+
+.dropdown-menu-item.delete-item:hover {
+  background-color: #fff0f0;
+}
+
+.dropdown-menu-item.delete-item .menu-icon {
+  color: #c0392b;
+}
+
+.dropdown-menu-item.delete-item:hover .menu-icon {
+  color: #a02a1f;
 }
