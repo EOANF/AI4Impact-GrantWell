@@ -291,4 +291,52 @@ export class DraftsClient {
     console.log('Draft generation response data:', data);
     return data.sections || {};
   }
+
+  // Generates a tagged PDF from draft data
+  async generatePDF(draftData: {
+    title?: string;
+    projectBasics?: any;
+    sections?: Record<string, string>;
+  }): Promise<Blob> {
+    const auth = await Utils.authenticate();
+    console.log('Calling /generate-pdf with:', draftData);
+    
+    const response = await fetch(this.API + '/generate-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + auth,
+      },
+      body: JSON.stringify({
+        draftData: {
+          title: draftData.title || 'Grant Application',
+          projectBasics: draftData.projectBasics || {},
+          sections: draftData.sections || {},
+        },
+      }),
+    });
+
+    console.log('PDF generation response status:', response.status);
+    console.log('PDF generation response headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (response.status !== 200) {
+      let errorMessage;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.message || 'Failed to generate PDF';
+      } catch (e) {
+        // If response is not JSON, try to get text
+        const errorText = await response.text();
+        errorMessage = errorText || `Failed to generate PDF: HTTP ${response.status}`;
+      }
+      console.error('PDF generation error:', errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    // The response is a PDF blob
+    // API Gateway HTTP API will decode the base64 body automatically
+    const blob = await response.blob();
+    console.log('PDF blob created, size:', blob.size, 'bytes');
+    return blob;
+  }
 } 

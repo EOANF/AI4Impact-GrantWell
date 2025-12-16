@@ -471,6 +471,57 @@ export default function Welcome() {
     </div>
   );
 
+  const AboutPanel = () => (
+    <div
+      style={{
+        maxWidth: "800px",
+        margin: "0 auto",
+        textAlign: "center",
+        padding: "20px 0",
+      }}
+    >
+      <h2
+        style={{
+          fontSize: "24px",
+          lineHeight: "1.2",
+          textAlign: "center",
+          color: mainTextColor,
+          marginBottom: "20px",
+        }}
+      >
+        About GrantWell
+      </h2>
+      <p
+        style={{
+          fontSize: "16px",
+          lineHeight: "1.7",
+          color: bodyTextColor,
+          marginBottom: "16px",
+        }}
+      >
+        GrantWell is a free, AI-enabled tool designed to simplify the federal
+        grant application process for municipalities, community groups, and
+        underserved populations in Massachusetts. Developed through Northeastern
+        University's AI for Impact program in collaboration with the
+        Commonwealth of Massachusetts and the the Federal Funds & Infrastructure
+        Office (FFIO).
+      </p>
+      <p
+        style={{
+          fontSize: "16px",
+          lineHeight: "1.7",
+          color: bodyTextColor,
+          marginBottom: "16px",
+        }}
+      >
+        GrantWell removes barriers that often prevent smaller communities from
+        accessing critical funding opportunities. The tool is specifically built
+        to empower historically underfunded and understaffed communities by
+        reducing the complexity and time required for grant applications.
+      </p>
+    </div>
+  );
+
   const ResourcesPanel = () => (
     <div
       style={{
@@ -589,10 +640,14 @@ export default function Welcome() {
           e.preventDefault();
           const mainContent = document.getElementById("main-content");
           if (mainContent) {
-            // Scroll to main content
-            mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
-            // Move focus to main content
+            // Focus first to ensure keyboard focus moves
             mainContent.focus();
+            // Then scroll smoothly
+            mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
+            // Ensure focus is maintained after scroll
+            setTimeout(() => {
+              mainContent.focus();
+            }, 100);
           }
         }}
       >
@@ -603,7 +658,7 @@ export default function Welcome() {
           maxWidth: "950px",
           margin: "0 auto",
           padding: "0 40px",
-          marginTop: "70px",
+          marginTop: "40px",
           display: "flex",
           flexDirection: "column",
         }}
@@ -615,7 +670,6 @@ export default function Welcome() {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            marginTop: "40px",
             marginBottom: "30px",
             position: "relative",
             width: "100%",
@@ -932,9 +986,16 @@ export default function Welcome() {
                     margin: "0 0 15px 0",
                   }}
                 >
-                  To access the dashboard to add grants or manage users, click the button below.
+                  To access the dashboard to add grants or manage users, click
+                  the button below.
                   <br />
-                  <span style={{ fontSize: "13px", fontStyle: "italic", color: "#666" }}>
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      fontStyle: "italic",
+                      color: "#666",
+                    }}
+                  >
                     (This section is only visible to administrators)
                   </span>
                 </p>
@@ -978,6 +1039,11 @@ export default function Welcome() {
           </ContentBox>
         )}
 
+        {/* About Us Section */}
+        <ContentBox backgroundColor="#ffffff">
+          <AboutPanel />
+        </ContentBox>
+
         <ContentBox backgroundColor="#F6FCFF">
           <HistoryPanel />
         </ContentBox>
@@ -986,18 +1052,6 @@ export default function Welcome() {
         <ContentBox>
           <ResourcesPanel />
         </ContentBox>
-
-        {/* Feedback Section */}
-        {/* <InfoBanner
-          title="We Value Your Feedback!"
-          height="150px"
-          description="Help us make GrantWell better by sharing your thoughts and suggestions."
-          buttonText="Open Feedback Form"
-          buttonAction={() =>
-            window.open("https://forms.gle/M2PHgWTVVRrRubpc7", "_blank")
-          }
-          backgroundColor="#006499"
-        /> */}
       </div>
 
       {/* Footer Section */}
@@ -1100,6 +1154,69 @@ export default function Welcome() {
           </div>
         </div>
       </footer>
+
+      {/* Fixed Feedback Tab */}
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          // TODO: Add feedback link URL here
+          // window.open('FEEDBACK_URL_HERE', '_blank');
+        }}
+        style={{
+          position: "fixed",
+          right: 0,
+          top: "50%",
+          transform: "translateY(-50%)",
+          backgroundColor: "#ffffff",
+          border: "2px solid #14558f",
+          borderRight: "none",
+          borderTopLeftRadius: "8px",
+          borderBottomLeftRadius: "8px",
+          padding: "20px 8px",
+          zIndex: 1000,
+          cursor: "pointer",
+          textDecoration: "none",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+          transition: "all 0.2s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#f0f7ff";
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.2)";
+          e.currentTarget.style.transform = "translateY(-50%) translateX(-4px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#ffffff";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.transform = "translateY(-50%)";
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.outline = "3px solid #2c4fdb";
+          e.currentTarget.style.outlineOffset = "2px";
+          e.currentTarget.style.backgroundColor = "#f0f7ff";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.outline = "none";
+          e.currentTarget.style.backgroundColor = "#ffffff";
+        }}
+        aria-label="Provide feedback"
+      >
+        <span
+          style={{
+            color: "#14558f",
+            fontSize: "16px",
+            fontWeight: "600",
+            writingMode: "vertical-rl",
+            textOrientation: "mixed",
+            letterSpacing: "0.5px",
+          }}
+        >
+          Feedback
+        </span>
+      </a>
     </>
   );
 }
