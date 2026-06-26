@@ -14,7 +14,7 @@ const getCognitoDomainName = () => {
   if (ENVIRONMENT === 'production') {
     return 'gw-auth-prod';
   } else if (ENVIRONMENT === 'staging') {
-    return 'gw-auth-staging';
+    return 'gw-auth-eoanf-staging';
   }
   
   // Fallback for local development
@@ -34,7 +34,7 @@ const getStackName = () => {
   if (ENVIRONMENT === 'production') {
     return 'gw-stack-prod';
   } else if (ENVIRONMENT === 'staging') {
-    return 'gw-stack-staging';
+    return 'gw-eoanf-staging';
   }
   
   // Fallback for local development
